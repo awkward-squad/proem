@@ -23,6 +23,15 @@ module Proem
 
     -- * Control.Concurrent.MVar
     MVar,
+    isEmptyMVar,
+    newEmptyMVar,
+    newMVar,
+    putMVar,
+    readMVar,
+    takeMVar,
+    tryPutMVar,
+    tryReadMVar,
+    tryTakeMVar,
 
     -- * Control.Concurrent.STM
     STM,
@@ -173,6 +182,14 @@ module Proem
     -- clamp,
     -- #endif
 
+    -- * Data.Proxy
+    Proxy (Proxy),
+    Proxy#,
+    proxy#,
+
+    -- * Data.Ratio
+    Rational,
+
     -- * Data.Semiigroup
     Semigroup ((<>)),
 
@@ -218,15 +235,62 @@ module Proem
     traceShowIdStack,
     traceStack,
 
-    -- * GHC.Err
-    error,
-    undefined,
+    -- * GHC.Base
+    ($!),
+
+    -- * GHC.Enum
+    Bounded (maxBound, minBound),
+
+    -- * GHC.Float
+    Double,
+    Float,
+
+    -- * GHC.Generics
+    Generic,
+
+    -- * GHC.Integer
+    Integer,
+
+    -- * GHC.Num
+    Num ((*), (+), (-), abs, fromInteger, negate, signum),
+
+    -- * GHC.OverloadedLabels
+    IsLabel (fromLabel),
+
+    -- * GHC.Real
+    Fractional ((/), fromRational, recip),
+    Integral (div, divMod, mod, quot, quotRem, rem, toInteger),
+    Real (toRational),
+    RealFrac (ceiling, floor, properFraction, round, truncate),
+    (^),
+    (^^),
+    even,
+    fromIntegral,
+    odd,
+    realToFrac,
 
     -- * GHC.Stack
     HasCallStack,
 
+    -- * Numeric.Natural
+    Natural,
+
+    -- * Prelude
+    error,
+    seq,
+    subtract,
+    undefined,
+
     -- * System.IO
+    FilePath,
     IO,
+    print,
+
+    -- * System.Mem.StableName
+    StableName,
+    eqStableName,
+    hashStableName,
+    makeStableName,
 
     -- * Text.Show
     Show (show),
@@ -241,7 +305,18 @@ import Control.Applicative
   )
 import Control.Category ((<<<), (>>>))
 import Control.Concurrent (ThreadId, myThreadId)
-import Control.Concurrent.MVar (MVar)
+import Control.Concurrent.MVar
+  ( MVar,
+    isEmptyMVar,
+    newEmptyMVar,
+    newMVar,
+    putMVar,
+    readMVar,
+    takeMVar,
+    tryPutMVar,
+    tryReadMVar,
+    tryTakeMVar,
+  )
 import Control.Exception
   ( Exception (displayException, fromException, toException),
     SomeAsyncException (SomeAsyncException),
@@ -289,6 +364,7 @@ import Data.List (cycle, iterate, iterate', map, repeat, (++))
 import Data.Maybe (Maybe (Just, Nothing), isJust, isNothing, maybe)
 import Data.Monoid (Monoid (mconcat, mempty))
 import Data.Ord (Ord (compare, max, min, (<), (<=), (>), (>=)), Ordering (EQ, GT, LT))
+import Data.Proxy (Proxy (Proxy))
 import Data.STRef (STRef, modifySTRef', newSTRef, readSTRef, writeSTRef)
 import Data.Semigroup (Semigroup ((<>)))
 import Data.String (IsString (fromString), String)
@@ -298,14 +374,25 @@ import Data.Typeable (Typeable)
 import Data.Void (Void, absurd)
 import Data.Word (Word, Word16, Word32, Word64, Word8)
 import qualified Debug.Trace
+import GHC.Base (($!))
 import GHC.Conc (STM, TVar, atomically, catchSTM, newTVar, newTVarIO, readTVar, readTVarIO, retry, throwSTM, writeTVar)
+import GHC.Enum (Bounded (maxBound, minBound))
 import GHC.Err (error)
 import GHC.Exception (errorCallWithCallStackException)
-import GHC.Exts (RuntimeRep, TYPE, raise#)
+import GHC.Exts (Proxy#, RuntimeRep, TYPE, proxy#, raise#, seq)
+import GHC.Float (Double, Float)
+import GHC.Generics (Generic)
+import GHC.IO (FilePath, IO)
+import GHC.Natural (Natural)
+import GHC.Num (Num (abs, fromInteger, negate, signum, (*), (+), (-)), subtract)
+import GHC.OverloadedLabels (IsLabel (fromLabel))
+import GHC.Real (Fractional (fromRational, recip, (/)), Integral (div, divMod, mod, quot, quotRem, rem, toInteger), Rational, Real (toRational), RealFrac (ceiling, floor, properFraction, round, truncate), even, fromIntegral, odd, realToFrac, (^), (^^))
+import GHC.Show (Show (show))
 import GHC.Stack (HasCallStack, callStack, currentCallStack, freezeCallStack, renderStack)
-import System.IO (IO)
+import System.IO (print)
 import System.IO.Unsafe (unsafePerformIO)
-import Text.Show (Show (show))
+import System.Mem.StableName (StableName, eqStableName, hashStableName, makeStableName)
+import Prelude (Integer)
 
 {-# WARNING trace "trace" #-}
 trace :: String -> a -> a
