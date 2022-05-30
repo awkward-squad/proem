@@ -299,18 +299,13 @@ import Data.Void (Void, absurd)
 import Data.Word (Word, Word16, Word32, Word64, Word8)
 import qualified Debug.Trace
 import GHC.Conc (STM, TVar, atomically, catchSTM, newTVar, newTVarIO, readTVar, readTVarIO, retry, throwSTM, writeTVar)
-import qualified GHC.Err
+import GHC.Err (error)
 import GHC.Exception (errorCallWithCallStackException)
 import GHC.Exts (RuntimeRep, TYPE, raise#)
 import GHC.Stack (HasCallStack, callStack, currentCallStack, freezeCallStack, renderStack)
 import System.IO (IO)
 import System.IO.Unsafe (unsafePerformIO)
 import Text.Show (Show (show))
-
-{-# WARNING error "error" #-}
-error :: forall (r :: RuntimeRep). forall (a :: TYPE r). HasCallStack => String -> a
-error message =
-  raise# (errorCallWithCallStackException message (freezeCallStack callStack))
 
 {-# WARNING trace "trace" #-}
 trace :: String -> a -> a
