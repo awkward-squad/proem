@@ -1,5 +1,9 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE MagicHash #-}
+{-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 
 module Proem
@@ -15,9 +19,23 @@ module Proem
 
     -- * Control.Concurrent
     ThreadId,
+    myThreadId,
 
     -- * Control.Concurrent.MVar
     MVar,
+
+    -- * Control.Concurrent.STM
+    STM,
+    TVar,
+    atomically,
+    catchSTM,
+    newTVar,
+    newTVarIO,
+    readTVar,
+    readTVarIO,
+    retry,
+    throwSTM,
+    writeTVar,
 
     -- * Control.Exception
     Exception (displayException, fromException, toException),
@@ -44,6 +62,10 @@ module Proem
     -- * Control.Monad.ST
     ST,
     runST,
+
+    -- * Control.Parallel
+    par,
+    pseq,
 
     -- * Data.Bool
     Bool (False, True),
@@ -142,7 +164,7 @@ module Proem
     maybe,
 
     -- * Data.Monoid
-    Monoid (mappend, mconcat, mempty),
+    Monoid (mconcat, mempty),
 
     -- * Data.Ord
     Ord ((<), (<=), (>), (>=), compare, max, min),
@@ -152,7 +174,7 @@ module Proem
     -- #endif
 
     -- * Data.Semiigroup
-    Semigroup (sconcat, stimes, (<>)),
+    Semigroup ((<>)),
 
     -- * Data.STRef
     STRef,
@@ -196,6 +218,13 @@ module Proem
     traceShowIdStack,
     traceStack,
 
+    -- * GHC.Err
+    error,
+    undefined,
+
+    -- * GHC.Stack
+    HasCallStack,
+
     -- * System.IO
     IO,
 
@@ -211,7 +240,7 @@ import Control.Applicative
     optional,
   )
 import Control.Category ((<<<), (>>>))
-import Control.Concurrent (ThreadId)
+import Control.Concurrent (ThreadId, myThreadId)
 import Control.Concurrent.MVar (MVar)
 import Control.Exception
   ( Exception (displayException, fromException, toException),
@@ -225,6 +254,7 @@ import Control.Monad (Monad ((>>), (>>=)), forever, guard, join, when, (<$!>), (
 import Control.Monad.Fix (MonadFix (mfix))
 import Control.Monad.IO.Class
 import Control.Monad.ST (ST, runST)
+import Control.Parallel (par, pseq)
 import Data.Bool (Bool (False, True), not, otherwise, (&&), (||))
 import Data.Char (Char)
 import Data.Coerce (Coercible, coerce)
@@ -257,10 +287,10 @@ import Data.Int (Int, Int16, Int32, Int64, Int8)
 import Data.Kind (Constraint, Type)
 import Data.List (cycle, iterate, iterate', map, repeat, (++))
 import Data.Maybe (Maybe (Just, Nothing), isJust, isNothing, maybe)
-import Data.Monoid (Monoid (mappend, mconcat, mempty))
+import Data.Monoid (Monoid (mconcat, mempty))
 import Data.Ord (Ord (compare, max, min, (<), (<=), (>), (>=)), Ordering (EQ, GT, LT))
 import Data.STRef (STRef, modifySTRef', newSTRef, readSTRef, writeSTRef)
-import Data.Semigroup (Semigroup (sconcat, stimes, (<>)))
+import Data.Semigroup (Semigroup ((<>)))
 import Data.String (IsString (fromString), String)
 import Data.Traversable (Traversable (mapM, sequence, sequenceA, traverse), for, forM)
 import Data.Tuple (fst, snd)
@@ -268,10 +298,19 @@ import Data.Typeable (Typeable)
 import Data.Void (Void, absurd)
 import Data.Word (Word, Word16, Word32, Word64, Word8)
 import qualified Debug.Trace
-import GHC.Stack (currentCallStack, renderStack)
+import GHC.Conc (STM, TVar, atomically, catchSTM, newTVar, newTVarIO, readTVar, readTVarIO, retry, throwSTM, writeTVar)
+import qualified GHC.Err
+import GHC.Exception (errorCallWithCallStackException)
+import GHC.Exts (RuntimeRep, TYPE, raise#)
+import GHC.Stack (HasCallStack, callStack, currentCallStack, freezeCallStack, renderStack)
 import System.IO (IO)
 import System.IO.Unsafe (unsafePerformIO)
 import Text.Show (Show (show))
+
+{-# WARNING error "error" #-}
+error :: forall (r :: RuntimeRep). forall (a :: TYPE r). HasCallStack => String -> a
+error message =
+  raise# (errorCallWithCallStackException message (freezeCallStack callStack))
 
 {-# WARNING trace "trace" #-}
 trace :: String -> a -> a
@@ -289,6 +328,7 @@ traceM = Debug.Trace.traceM
 traceShowId :: Show a => a -> a
 traceShowId = Debug.Trace.traceShowId
 
+-- Meh, this variant seems to be missing from Debug.Trace
 {-# WARNING traceShowIdStack "traceShowIdStack" #-}
 traceShowIdStack :: Show a => a -> a
 traceShowIdStack x =
@@ -301,3 +341,8 @@ traceShowIdStack x =
 {-# WARNING traceStack "traceStack" #-}
 traceStack :: String -> a -> a
 traceStack = Debug.Trace.traceStack
+
+{-# WARNING undefined "undefined" #-}
+undefined :: forall (r :: RuntimeRep). forall (a :: TYPE r). HasCallStack => a
+undefined =
+  raise# (errorCallWithCallStackException "undefined" (freezeCallStack callStack))
