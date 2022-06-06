@@ -83,6 +83,9 @@ module Proem
     not,
     otherwise,
 
+    -- * Data.ByteString
+    ByteString,
+
     -- * Data.Char
     Char,
 
@@ -203,6 +206,9 @@ module Proem
     -- * Data.String
     IsString (fromString),
     String,
+
+    -- * Data.Text
+    Text,
 
     -- * Data.Traversable
     Traversable (mapM, sequence, sequenceA, traverse),
@@ -331,6 +337,7 @@ import Control.Monad.IO.Class
 import Control.Monad.ST (ST, runST)
 import Control.Parallel (par, pseq)
 import Data.Bool (Bool (False, True), not, otherwise, (&&), (||))
+import Data.ByteString (ByteString)
 import Data.Char (Char)
 import Data.Coerce (Coercible, coerce)
 import Data.Either (Either (Left, Right), either, isLeft, isRight)
@@ -368,6 +375,7 @@ import Data.Proxy (Proxy (Proxy))
 import Data.STRef (STRef, modifySTRef', newSTRef, readSTRef, writeSTRef)
 import Data.Semigroup (Semigroup ((<>)))
 import Data.String (IsString (fromString), String)
+import Data.Text (Text)
 import Data.Traversable (Traversable (mapM, sequence, sequenceA, traverse), for, forM)
 import Data.Tuple (fst, snd)
 import Data.Typeable (Typeable)
