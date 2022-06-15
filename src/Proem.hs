@@ -169,6 +169,9 @@ module Proem
     map,
     repeat,
 
+    -- * Data.Map
+    Map,
+
     -- * Data.Maybe
     Maybe (Just, Nothing),
     isJust,
@@ -193,8 +196,14 @@ module Proem
     -- * Data.Ratio
     Rational,
 
-    -- * Data.Semiigroup
+    -- * Data.Semigroup
     Semigroup ((<>)),
+
+    -- * Data.Sequence
+    Seq,
+
+    -- * Data.Set
+    Set,
 
     -- * Data.STRef
     STRef,
@@ -368,12 +377,15 @@ import Data.IORef (IORef)
 import Data.Int (Int, Int16, Int32, Int64, Int8)
 import Data.Kind (Constraint, Type)
 import Data.List (cycle, iterate, iterate', map, repeat, (++))
+import Data.Map (Map)
 import Data.Maybe (Maybe (Just, Nothing), isJust, isNothing, maybe)
 import Data.Monoid (Monoid (mconcat, mempty))
 import Data.Ord (Ord (compare, max, min, (<), (<=), (>), (>=)), Ordering (EQ, GT, LT))
 import Data.Proxy (Proxy (Proxy))
 import Data.STRef (STRef, modifySTRef', newSTRef, readSTRef, writeSTRef)
 import Data.Semigroup (Semigroup ((<>)))
+import Data.Sequence (Seq)
+import Data.Set (Set)
 import Data.String (IsString (fromString), String)
 import Data.Text (Text)
 import Data.Traversable (Traversable (mapM, sequence, sequenceA, traverse), for, forM)
