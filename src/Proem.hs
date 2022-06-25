@@ -128,9 +128,10 @@ module Proem
 
     -- * Data.Functor
     Functor ((<$), fmap),
+    ($>),
+    (<$!>),
     (<$>),
     (<&>),
-    (<$!>),
     void,
 
     -- * Data.Functor.Identity
@@ -368,7 +369,7 @@ import Data.Foldable
     traverse_,
   )
 import Data.Function (const, fix, id, ($), (&), (.))
-import Data.Functor (Functor (fmap, (<$)), void, (<$>), (<&>))
+import Data.Functor (Functor (fmap, (<$)), void, ($>), (<$>), (<&>))
 import Data.Functor.Compose (Compose (Compose, getCompose))
 import Data.Functor.Const (Const (Const, getConst))
 import Data.Functor.Contravariant (Contravariant (contramap, (>$)), ($<), (>$<))
