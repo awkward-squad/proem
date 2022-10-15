@@ -4,10 +4,11 @@ module Proem.List
     mapMaybe,
 
     -- * Data.List
+    drop,
     sort,
     take,
   )
 where
 
-import Data.List (sort, take)
+import Data.List (drop, sort, take)
 import Data.Maybe (catMaybes, mapMaybe)
