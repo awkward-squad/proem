@@ -1,11 +1,3 @@
-{-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE CPP #-}
-{-# LANGUAGE KindSignatures #-}
-{-# LANGUAGE MagicHash #-}
-{-# LANGUAGE PolyKinds #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE NoImplicitPrelude #-}
-
 module Proem
   ( -- * Control.Applicative
     Alternative ((<|>), empty, many, some),
