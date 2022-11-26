@@ -30,14 +30,16 @@ library
     containers ^>= 0.6,
     parallel ^>= 3.2,
     text ^>= 1.2 || ^>= 2.0,
+    unix ^>= 2.8,
   default-extensions:
     BlockArguments
     CPP
     KindSignatures
     MagicHash
+    NoImplicitPrelude
     PolyKinds
     ScopedTypeVariables
-    NoImplicitPrelude
+    TypeApplications
   exposed-modules:
     Proem
     Proem.List
