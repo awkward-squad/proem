@@ -18,13 +18,15 @@ import Control.Monad (when)
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Internal as ByteString.Internal
 import qualified Data.ByteString.Unsafe as ByteString.Unsafe
+import Data.Coerce (coerce)
 import Data.Int (Int64)
 import Data.Word (Word8)
 import qualified Foreign.C.Types as C
 import Foreign.Ptr (Ptr)
 import qualified Foreign.Ptr as Ptr
 import Language.Haskell.TH.Quote (QuasiQuoter)
-import qualified System.OsPath.Posix as OsPath
+import qualified System.OsPath as OsPath
+import qualified System.OsString.Internal.Types as OsString.Internal
 import qualified System.Posix.Files.ByteString as Posix (fileSize, getFdStatus)
 import qualified System.Posix.IO.PosixString as Posix
   ( OpenFileFlags (..),
@@ -40,12 +42,12 @@ import Prelude hiding (read)
 
 -- | A file path.
 type Path =
-  OsPath.PosixPath
+  OsPath.OsPath
 
 -- | 'Path' quasi-quoter.
 path :: QuasiQuoter
 path =
-  OsPath.pstr
+  OsPath.osp
 
 -- | Read a file.
 -- FIXME make this non-blocking
@@ -54,7 +56,11 @@ read :: Path -> IO (Either IOException ByteString)
 read p =
   Exception.try do
     Exception.bracket
-      (Posix.openFd p Posix.ReadOnly Posix.defaultFileFlags)
+      ( Posix.openFd
+          (coerce @OsString.Internal.OsString @OsString.Internal.PosixString p)
+          Posix.ReadOnly
+          Posix.defaultFileFlags
+      )
       Posix.closeFd
       \fd -> do
         let loop :: C.CSize -> Ptr.Ptr Word8 -> IO ()
@@ -74,7 +80,7 @@ write p contents =
   Exception.try do
     Exception.bracket
       ( Posix.openFd
-          p
+          (coerce @OsString.Internal.OsString @OsString.Internal.PosixString p)
           Posix.WriteOnly
           Posix.defaultFileFlags
             { Posix.creat = Just 0o666,
