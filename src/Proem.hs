@@ -40,6 +40,7 @@ module Proem
 
     -- * Control.Exception
     Exception (displayException, fromException, toException),
+    IOException,
     SomeAsyncException (SomeAsyncException),
     SomeException (SomeException),
     assert,
@@ -330,6 +331,7 @@ import Control.Concurrent.MVar
   )
 import Control.Exception
   ( Exception (displayException, fromException, toException),
+    IOException,
     SomeAsyncException (SomeAsyncException),
     SomeException (SomeException),
     assert,
@@ -430,21 +432,22 @@ import qualified System.Posix.Types as Posix (COff (..))
 import Prelude (Integer)
 
 -- | Read a file.
-readFile :: ByteString -> IO ByteString
+readFile :: ByteString -> IO (Either IOException ByteString)
 readFile path =
-  Control.Exception.bracket
-    (Posix.openFd path Posix.ReadOnly Posix.defaultFileFlags)
-    Posix.closeFd
-    \fd -> do
-      let loop :: Foreign.C.Types.CSize -> Foreign.Ptr.Ptr Word8 -> IO ()
-          loop n ptr = do
-            m <- Posix.fdReadBuf fd ptr n
-            when (m < n) (loop (n - m) (Foreign.Ptr.plusPtr ptr (unsafeCSizeToInt m)))
-      status <- Posix.getFdStatus fd
-      let Posix.COff size64 = Posix.fileSize status
-      ByteString.Internal.create
-        (unsafeInt64ToInt size64)
-        (loop (int64ToCSize size64))
+  Control.Exception.try do
+    Control.Exception.bracket
+      (Posix.openFd path Posix.ReadOnly Posix.defaultFileFlags)
+      Posix.closeFd
+      \fd -> do
+        let loop :: Foreign.C.Types.CSize -> Foreign.Ptr.Ptr Word8 -> IO ()
+            loop n ptr = do
+              m <- Posix.fdReadBuf fd ptr n
+              when (m < n) (loop (n - m) (Foreign.Ptr.plusPtr ptr (unsafeCSizeToInt m)))
+        status <- Posix.getFdStatus fd
+        let Posix.COff size64 = Posix.fileSize status
+        ByteString.Internal.create
+          (unsafeInt64ToInt size64)
+          (loop (int64ToCSize size64))
 
 {-# WARNING trace "trace" #-}
 trace :: String -> a -> a
