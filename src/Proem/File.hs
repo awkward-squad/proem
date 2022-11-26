@@ -1,5 +1,13 @@
+{-# LANGUAGE CPP #-}
+
+#if defined(mingw32_HOST_OS) || defined(__MINGW32__)
+#error "Proem.File: Windows not supported"
+#endif
+
 module Proem.File
-  ( read,
+  ( Path,
+    path,
+    read,
     write,
   )
 where
@@ -15,20 +23,38 @@ import Data.Word (Word8)
 import qualified Foreign.C.Types as C
 import Foreign.Ptr (Ptr)
 import qualified Foreign.Ptr as Ptr
+import Language.Haskell.TH.Quote (QuasiQuoter)
+import qualified System.OsPath.Posix as OsPath
 import qualified System.Posix.Files.ByteString as Posix (fileSize, getFdStatus)
-import qualified System.Posix.IO.ByteString as Posix (OpenFileFlags (..), OpenMode (ReadOnly, WriteOnly), closeFd, defaultFileFlags, fdReadBuf, fdWriteBuf, openFd)
+import qualified System.Posix.IO.PosixString as Posix
+  ( OpenFileFlags (..),
+    OpenMode (ReadOnly, WriteOnly),
+    closeFd,
+    defaultFileFlags,
+    fdReadBuf,
+    fdWriteBuf,
+    openFd,
+  )
 import qualified System.Posix.Types as Posix (COff (..))
 import Prelude hiding (read)
 
+-- | A file path.
+type Path =
+  OsPath.PosixPath
+
+-- | 'Path' quasi-quoter.
+path :: QuasiQuoter
+path =
+  OsPath.pstr
+
 -- | Read a file.
--- FIXME OsPath
 -- FIXME make this non-blocking
 -- FIXME lock file? (or otherwise handle race conditions)
-read :: ByteString -> IO (Either IOException ByteString)
-read path =
+read :: Path -> IO (Either IOException ByteString)
+read p =
   Exception.try do
     Exception.bracket
-      (Posix.openFd path Posix.ReadOnly Posix.defaultFileFlags)
+      (Posix.openFd p Posix.ReadOnly Posix.defaultFileFlags)
       Posix.closeFd
       \fd -> do
         let loop :: C.CSize -> Ptr.Ptr Word8 -> IO ()
@@ -42,14 +68,13 @@ read path =
           (loop (int64ToCSize size64))
 
 -- | Write a file.
--- FIXME OsPath
 -- FIXME make this non-blocking
-write :: ByteString -> ByteString -> IO (Either IOException ())
-write path contents =
+write :: Path -> ByteString -> IO (Either IOException ())
+write p contents =
   Exception.try do
     Exception.bracket
       ( Posix.openFd
-          path
+          p
           Posix.WriteOnly
           Posix.defaultFileFlags
             { Posix.creat = Just 0o666,
