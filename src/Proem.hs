@@ -303,9 +303,6 @@ module Proem
 
     -- * Text.Show
     Show (show),
-
-    -- * New types and functions
-    readFile,
   )
 where
 
@@ -338,7 +335,6 @@ import Control.Exception
     asyncExceptionFromException,
     asyncExceptionToException,
   )
-import qualified Control.Exception
 import Control.Monad (Monad ((>>), (>>=)), forever, guard, join, when, (<$!>), (=<<))
 import Control.Monad.Fix (MonadFix (mfix))
 import Control.Monad.IO.Class
@@ -346,7 +342,6 @@ import Control.Monad.ST (ST, runST)
 import Control.Parallel (par, pseq)
 import Data.Bool (Bool (False, True), not, otherwise, (&&), (||))
 import Data.ByteString (ByteString)
-import qualified Data.ByteString.Internal as ByteString.Internal
 import Data.Char (Char)
 import Data.Coerce (Coercible, coerce)
 import Data.Either (Either (Left, Right), either, isLeft, isRight)
@@ -394,8 +389,6 @@ import Data.Typeable (Typeable)
 import Data.Void (Void, absurd)
 import Data.Word (Word, Word16, Word32, Word64, Word8)
 import qualified Debug.Trace
-import qualified Foreign.C.Types
-import qualified Foreign.Ptr
 import GHC.Base (($!))
 import GHC.Conc (STM, TVar, atomically, catchSTM, newTVar, newTVarIO, readTVar, readTVarIO, retry, throwSTM, writeTVar)
 import GHC.Enum (Bounded (maxBound, minBound))
@@ -426,28 +419,7 @@ import GHC.Stack (HasCallStack, callStack, currentCallStack, freezeCallStack, re
 import System.IO (print)
 import System.IO.Unsafe (unsafePerformIO)
 import System.Mem.StableName (StableName, eqStableName, hashStableName, makeStableName)
-import qualified System.Posix.Files.ByteString as Posix (fileSize, getFdStatus)
-import qualified System.Posix.IO.ByteString as Posix (OpenMode (ReadOnly), closeFd, defaultFileFlags, fdReadBuf, openFd)
-import qualified System.Posix.Types as Posix (COff (..))
 import Prelude (Integer)
-
--- | Read a file.
-readFile :: ByteString -> IO (Either IOException ByteString)
-readFile path =
-  Control.Exception.try do
-    Control.Exception.bracket
-      (Posix.openFd path Posix.ReadOnly Posix.defaultFileFlags)
-      Posix.closeFd
-      \fd -> do
-        let loop :: Foreign.C.Types.CSize -> Foreign.Ptr.Ptr Word8 -> IO ()
-            loop n ptr = do
-              m <- Posix.fdReadBuf fd ptr n
-              when (m < n) (loop (n - m) (Foreign.Ptr.plusPtr ptr (unsafeCSizeToInt m)))
-        status <- Posix.getFdStatus fd
-        let Posix.COff size64 = Posix.fileSize status
-        ByteString.Internal.create
-          (unsafeInt64ToInt size64)
-          (loop (int64ToCSize size64))
 
 {-# WARNING trace "trace" #-}
 trace :: String -> a -> a
@@ -483,20 +455,3 @@ traceStack = Debug.Trace.traceStack
 undefined :: forall (r :: RuntimeRep). forall (a :: TYPE r). HasCallStack => a
 undefined =
   raise# (errorCallWithCallStackException "undefined" (freezeCallStack callStack))
-
---
-
-int64ToCSize :: Int64 -> Foreign.C.Types.CSize
-int64ToCSize =
-  fromIntegral
-{-# INLINE int64ToCSize #-}
-
-unsafeInt64ToInt :: Int64 -> Int
-unsafeInt64ToInt =
-  fromIntegral
-{-# INLINE unsafeInt64ToInt #-}
-
-unsafeCSizeToInt :: Foreign.C.Types.CSize -> Int
-unsafeCSizeToInt =
-  fromIntegral
-{-# INLINE unsafeCSizeToInt #-}

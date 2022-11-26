@@ -42,6 +42,7 @@ library
     TypeApplications
   exposed-modules:
     Proem
+    Proem.File
     Proem.List
     Proem.Seq
   hs-source-dirs: src
