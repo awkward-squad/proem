@@ -30,7 +30,7 @@ library
     containers ^>= 0.6,
     filepath ^>= 1.4.100,
     parallel ^>= 3.2,
-    template-haskell ^>= 2.18,
+    template-haskell ^>= 2.18 || ^>= 2.19,
     text ^>= 1.2 || ^>= 2.0,
     unix ^>= 2.8,
   default-extensions:
