@@ -46,6 +46,7 @@ library
     Proem.File
     Proem.List
     Proem.Seq
+    Proem.Text
   hs-source-dirs: src
   default-language: Haskell2010
   ghc-options:
@@ -63,3 +64,17 @@ library
   if impl(ghc >= 9.2)
     ghc-options:
       -Wno-missing-kind-signatures
+
+benchmark bench
+  build-depends:
+    base,
+    park-bench ^>= 0.1.0,
+    proem,
+    text,
+  default-extensions:
+    ImportQualifiedPost
+  hs-source-dirs: bench
+  default-language: Haskell2010
+  ghc-options: -O -rtsopts -with-rtsopts=-T
+  main-is: Main.hs
+  type: exitcode-stdio-1.0
