@@ -28,27 +28,19 @@ library
     base ^>= 4.14 || ^>= 4.15 || ^>= 4.16 || ^>= 4.17 || ^>= 4.18,
     bytestring ^>= 0.10 || ^>= 0.11,
     containers ^>= 0.6,
-    filepath ^>= 1.4.100,
     parallel ^>= 3.2,
-    template-haskell ^>= 2.18 || ^>= 2.19 || ^>= 2.20 || ^>= 2.21,
     text ^>= 2.0,
-    unix ^>= 2.8,
   default-extensions:
     BlockArguments
-    KindSignatures
     MagicHash
     NoImplicitPrelude
-    PolyKinds
-    ScopedTypeVariables
-    TypeApplications
   exposed-modules:
     Proem
-    Proem.File
     Proem.List
     Proem.Seq
     Proem.Text
   hs-source-dirs: src
-  default-language: Haskell2010
+  default-language: GHC2021
   ghc-options:
     -Weverything
     -Wno-all-missed-specialisations
